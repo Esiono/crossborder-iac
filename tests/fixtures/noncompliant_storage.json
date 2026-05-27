@@ -1,0 +1,19 @@
+{
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "azurerm_storage_account.bad",
+          "type": "azurerm_storage_account",
+          "name": "bad",
+          "values": {
+            "name": "stbadexample001",
+            "location": "westeurope",
+            "account_replication_type": "GRS",
+            "cross_tenant_replication_enabled": true
+          }
+        }
+      ]
+    }
+  }
+}
