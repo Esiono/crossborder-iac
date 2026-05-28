@@ -28,3 +28,17 @@ module "storage" {
     purpose     = "application-data"
   }
 }
+
+module "keyvault" {
+  source = "../../modules/compliant-keyvault"
+
+  name                = "kv-crossborder-mx-001"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  tenant_id           = "564d7dc7-ad9f-4c53-8635-84684725f19a"
+
+  tags = {
+    environment = "mx-central"
+    purpose     = "encryption-keys"
+  }
+}
