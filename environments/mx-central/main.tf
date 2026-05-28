@@ -12,6 +12,7 @@ resource "azurerm_resource_group" "main" {
     environment       = "mx-central"
     lfpdppp_compliant = "true"
     managed_by        = "terraform"
+    data_classification = "personal"
   }
 }
 
