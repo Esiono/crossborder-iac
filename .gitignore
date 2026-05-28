@@ -46,3 +46,5 @@ terraform.rc
 tfplan.binary
 tfplan.json
 *.tfplan
+# Backend files contain access keys — never commit
+environments/*/backend.tf
