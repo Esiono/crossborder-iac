@@ -1,0 +1,69 @@
+# =============================================================================
+# .github/workflows/terraform-compliance.yml
+# Runs Terraform plan + OPA policy checks on every pull request.
+#
+# Enforcement model:
+#   - OPA via Conftest: catches violations in PR before merge
+#   - Azure Policy: catches drift at runtime (separate layer)
+#
+# This workflow implements the CI half of the defense-in-depth strategy.
+# =============================================================================
+
+name: Terraform Compliance
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'environments/**'
+      - 'modules/**'
+      - 'policies/**'
+
+jobs:
+  compliance-mx-central:
+    name: OPA Compliance — mx-central
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.3"
+
+      - name: Install Conftest
+        run: |
+          wget https://github.com/open-policy-agent/conftest/releases/download/v0.56.0/conftest_0.56.0_Linux_x86_64.tar.gz
+          tar xzf conftest_0.56.0_Linux_x86_64.tar.gz
+          sudo mv conftest /usr/local/bin/
+          rm conftest_0.56.0_Linux_x86_64.tar.gz
+
+      - name: Terraform Init — mx-central
+        working-directory: environments/mx-central
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        run: terraform init
+
+      - name: Terraform Plan — mx-central
+        working-directory: environments/mx-central
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        run: |
+          terraform plan -out=tfplan.binary
+          terraform show -json tfplan.binary > tfplan.json
+
+      - name: OPA Policy Check — mx-central
+        working-directory: environments/mx-central
+        run: |
+          conftest test tfplan.json \
+            --policy ../../policies/ \
+            --namespace crossborder.storage
