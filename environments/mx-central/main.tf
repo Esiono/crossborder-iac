@@ -64,3 +64,22 @@ module "network" {
     purpose     = "application-network"
   }
 }
+module "observability" {
+  source = "../../modules/observability-baseline"
+
+  workspace_name      = "law-crossborder-mx-central"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  retention_in_days   = 90
+
+  diagnostic_targets = {
+    "storage"  = module.storage.id
+    "keyvault" = module.keyvault.id
+    "vnet"     = module.network.vnet_id
+  }
+
+  tags = {
+    environment = "mx-central"
+    purpose     = "compliance-logging"
+  }
+}
