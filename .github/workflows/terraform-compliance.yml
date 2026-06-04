@@ -67,3 +67,20 @@ jobs:
           conftest test tfplan.json \
             --policy ../../policies/ \
             --namespace crossborder.storage
+
+  checkov-scan:
+    name: Checkov Static Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: terraform
+          soft_fail: false
+          skip_check: CKV_AZURE_33,CKV_AZURE_110,CKV2_AZURE_1,CKV2_AZURE_18,CKV2_AZURE_21
+          output_format: cli
