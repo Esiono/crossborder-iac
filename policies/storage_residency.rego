@@ -63,3 +63,16 @@ deny contains msg if {
         [resource.name]
     )
 }
+# =============================================================================
+# RULE 4: VNet peering between MX and US regions is prohibited
+# LFPDPPP Art. 37 — peering creates a direct data path across borders
+# without explicit authorization, violating cross-border transfer rules.
+# =============================================================================
+deny contains msg if {
+    resource := input.planned_values.root_module.resources[_]
+    resource.type == "azurerm_virtual_network_peering"
+    msg := sprintf(
+        "LFPDPPP Art. 37 violation: VNet peering resource '%s' detected. Cross-region VNet peering creates unauthorized data paths across borders. Peering between mexicocentral and eastus2 is prohibited.",
+        [resource.name]
+    )
+}

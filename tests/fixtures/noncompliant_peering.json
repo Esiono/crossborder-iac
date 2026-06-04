@@ -1,0 +1,19 @@
+{
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "azurerm_virtual_network_peering.mx_to_us",
+          "type": "azurerm_virtual_network_peering",
+          "name": "mx_to_us",
+          "values": {
+            "name": "peering-mx-to-us",
+            "resource_group_name": "rg-crossborder-mx-central",
+            "virtual_network_name": "vnet-crossborder-mx-central",
+            "remote_virtual_network_id": "/subscriptions/8b652adb-aff0-451d-a1b1-3fe7eedf52f1/resourceGroups/rg-crossborder-us-east2/providers/Microsoft.Network/virtualNetworks/vnet-crossborder-us-east2"
+          }
+        }
+      ]
+    }
+  }
+}
