@@ -74,12 +74,13 @@ deny contains msg if {
 
 ## Arquitectura
 
+```
 crossborder-iac/
 ├── modules/
 │   ├── compliant-storage/        # Cuenta de almacenamiento — solo LRS, Art. 37
 │   ├── compliant-keyvault/       # Key Vault — purge protection, ACLs de red, tenant-locked
 │   ├── compliant-network/        # VNet + subnets — sin peering por diseño
-│   └── observability-baseline/   # Log Analytics — logs region-local, Art. 36
+│   └── observability-baseline/   # Log Analytics — logs región-local, Art. 36
 ├── environments/
 │   ├── mx-central/               # Mexico Central — data_classification = "personal"
 │   └── us-east2/                 # East US 2 — data_classification = "non-personal"
@@ -94,6 +95,7 @@ crossborder-iac/
 ├── .github/
 │   └── workflows/                # Checks de PR: terraform plan + OPA + Checkov
 └── conftest.toml
+```
 
 ## Módulos
 
@@ -159,12 +161,9 @@ conftest test plan.json -p ../../policies/
 
 **Eduardo Ayala Siono**
 
-Construí esto porque el problema está en mi patio trasero. Estoy basado en Mexicali — una ciudad fronteriza donde empresas estadounidenses han hecho nearshoring de operaciones por décadas, y donde la brecha entre "cumplimos con la ley mexicana de datos" y lo que la infraestructura realmente aplica es algo que veo ocurrir en la práctica. Seis años de trabajo en calidad de datos me enseñaron que las brechas de cumplimiento no vienen de la mala intención — vienen de la mala configuración, los procesos manuales, y la infraestructura que nadie auditó.
-
-Cuando México reescribió la LFPDPPP en 2025 con sanciones penales y multas de $3.86M USD, y Azure lanzó Mexico Central el año anterior específicamente para residencia de datos, vi una necesidad clara: alguien tiene que construir los patrones de infraestructura que apliquen estas reglas por defecto, no por documento de política.
-
-Mexicali, México · Zona horaria US Pacific · Bilingüe EN/ES (C2)
-
+Analista de Datos / Ingeniero de Datos con más de 6 años asegurando la integridad de datos en producción a escala. Basado en Mexicali, en la frontera EE.UU.–México.
+Construí este proyecto después de investigar las brechas operativas que enfrentan las empresas estadounidenses bajo la reforma LFPDPPP 2025 de México: multas de $3.86M USD, sanciones penales, y ningún patrón de infraestructura estandarizado para aplicarlas.
+📍 Mexicali, MX · US Pacific · EN/ES C2
 linkedin.com/in/eduardosiono
 
 ---
