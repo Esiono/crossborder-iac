@@ -74,6 +74,7 @@ deny contains msg if {
 
 ## Architecture
 
+```
 crossborder-iac/
 ├── modules/
 │   ├── compliant-storage/        # Storage account — LRS only, Art. 37
@@ -94,6 +95,7 @@ crossborder-iac/
 ├── .github/
 │   └── workflows/                # PR checks: terraform plan + OPA + Checkov
 └── conftest.toml
+```
 
 ## Modules
 
@@ -159,14 +161,11 @@ conftest test plan.json -p ../../policies/
 
 **Eduardo Ayala Siono**
 
-I built this because the problem is in my backyard. I'm based in Mexicali — a border city where US companies have been nearshoring operations for decades, and where the gap between "we comply with Mexican data law" and what the infrastructure actually enforces is something I see play out in practice. Six years of data quality work taught me that compliance gaps don't come from malice — they come from misconfiguration, manual processes, and infrastructure that nobody audited.
+Data Analyst / Data engineer with 6+ years ensuring production data integrity at scale. Based in Mexicali, on the US–Mexico border.
+Built this project after researching the operational gaps US companies face under Mexico's 2025 LFPDPPP reform: $3.86M fines, criminal penalties, and no standardized infrastructure patterns to enforce them.
 
-When Mexico rewrote the LFPDPPP in 2025 with criminal penalties and $3.86M fines, and Azure launched Mexico Central the year before specifically for data residency, I saw a clear need: someone has to build the infrastructure patterns that enforce these rules by default, not by policy document.
-
-Mexicali, Mexico · US Pacific timezone · Bilingual EN/ES (C2)
-
+📍 Mexicali, MX · US Pacific · EN/ES C2
 linkedin.com/in/eduardosiono
-
 ---
 
 Licensed under MIT. This is a reference implementation for portfolio purposes. LFPDPPP compliance requirements should be validated with legal counsel for production deployments.
