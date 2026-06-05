@@ -1,2 +1,172 @@
-# crossborder-iac
-Infrastructure-as-code platform enforcing compliant US–Mexico cloud deployments with Terraform, OPA, and Azure Policy. Implements LFPDPPP data residency requirements.
+# CrossBorder-IaC
+
+🇪🇸 [Lee esto en español](README.es.md)
+
+[![Terraform](https://img.shields.io/badge/Terraform-1.5+-7B42BC?logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![OPA](https://img.shields.io/badge/OPA-Conftest-4E5A65?logo=openpolicyagent&logoColor=white)](https://www.conftest.dev/)
+[![Azure](https://img.shields.io/badge/Azure-Mexico_Central_|_East_US_2-0078D4?logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/)
+[![Checkov](https://img.shields.io/badge/Checkov-Static_Analysis-5C4EE5)](https://www.checkov.io/)
+[![CI](https://github.com/Esiono/crossborder-iac/actions/workflows/terraform-compliance.yml/badge.svg)](https://github.com/Esiono/crossborder-iac/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+> **Policy-as-code platform enforcing Mexico's LFPDPPP data residency law across US–Mexico Azure deployments.** Three enforcement layers — IaC variables, CI policy gates, and runtime Azure Policy — ensure personal data never leaves its authorized region.
+
+---
+
+## The Problem
+
+Mexico overhauled its data protection law in March 2025. The new LFPDPPP replaced the 2010 framework, introduced criminal penalties of up to 5 years imprisonment for data breaches involving personal data, and raised fines to ~$3.86M USD — doubled when sensitive data is involved. Enforcement shifted from the dissolved INAI to a new executive-branch body, and specialized federal data protection courts are being established.
+
+This matters right now because of what's happening at the border:
+
+- **700,000+ tech professionals** work in Mexico's IT sector, the second-largest workforce in Latin America. US companies are nearshoring at record pace — Mexico attracted $40.9B in FDI in the first nine months of 2025 alone, surpassing the previous full-year record.
+- **Azure Mexico Central launched in May 2024** — Microsoft's first hyperscale cloud region in Spanish-speaking Latin America, built explicitly to serve nearshoring demand and in-country data residency requirements. AWS and Google Cloud followed with their own Mexican regions.
+- **1,100+ fintech startups** operate in Mexico, making it the second-largest fintech market in Latin America. Cross-border payment flows, remittance platforms, and digital banking all process personal data across the US–Mexico corridor daily.
+- **The USMCA joint review scheduled for July 2026** is expected to address cross-border data governance, cybersecurity cooperation, and AI-related compliance — tightening requirements further.
+
+The result: every US company with nearshore operations in Mexico now handles personal data subject to LFPDPPP, often across Azure regions on both sides of the border. A misconfigured storage account with geo-replication enabled, an accidental VNet peering, or a cross-tenant replication toggle can create a compliance violation with real legal consequences.
+
+Manual compliance checks don't scale. This project codifies those legal requirements directly into infrastructure.
+
+## How It Works
+
+Three enforcement layers catch violations at different stages, so nothing reaches production unchecked:
+
+| Control | Enforcement Layer | Mechanism |
+|---|---|---|
+| Data residency (Art. 36) | IaC | Terraform variable validation — only mexicocentral and eastus2 allowed |
+| Geo-replication ban (Art. 37) | IaC + CI | Storage accounts hardcoded to LRS + OPA rule rejects anything else |
+| Cross-tenant replication (Art. 37) | IaC + CI | Disabled at resource level + OPA rule validates plan output |
+| VNet peering prohibition (Art. 37) | CI | OPA rule blocks azurerm_virtual_network_peering resources entirely |
+| Runtime drift detection | Runtime | Azure Policy assignments per environment |
+| Audit log residency (Art. 36) | IaC | Log Analytics Workspace and diagnostic settings co-located with resources |
+
+## Legal Requirements in Code
+
+LFPDPPP citations are enforced in the infrastructure itself. Here is how Article 36 enforces region locking:
+
+```hcl
+variable "location" {
+  description = "Azure region where the storage account will be created."
+  type        = string
+
+  validation {
+    condition     = contains(["mexicocentral", "eastus2"], var.location)
+    error_message = "LFPDPPP Art. 36: Storage must be deployed to mexicocentral or eastus2 only."
+  }
+}
+```
+
+And the OPA policy that catches geo-replication in CI before any PR can merge:
+
+```rego
+deny contains msg if {
+    resource := input.planned_values.root_module.resources[_]
+    resource.type == "azurerm_storage_account"
+    replication := resource.values.account_replication_type
+    not allowed_replication_types[replication]
+    msg := sprintf(
+        "LFPDPPP Art. 37 violation: Storage account '%s' uses replication type '%s'. Only LRS is permitted.",
+        [resource.name, replication]
+    )
+}
+```
+
+## Architecture
+
+crossborder-iac/
+├── modules/
+│   ├── compliant-storage/        # Storage account — LRS only, Art. 37
+│   ├── compliant-keyvault/       # Key Vault — purge protection, network ACLs, tenant-locked
+│   ├── compliant-network/        # VNet + subnets — no peering by design
+│   └── observability-baseline/   # Log Analytics — region-local logs, Art. 36
+├── environments/
+│   ├── mx-central/               # Mexico Central — data_classification = "personal"
+│   └── us-east2/                 # East US 2 — data_classification = "non-personal"
+├── policies/
+│   └── storage_residency.rego    # 4 OPA rules enforcing Art. 36 + Art. 37
+├── tests/
+│   └── fixtures/                 # Terraform plan JSON for policy testing
+├── scripts/
+│   └── bootstrap-state-backend.sh  # Idempotent state storage setup (West US 2)
+├── docs/
+│   └── adr/                      # Architecture Decision Records
+├── .github/
+│   └── workflows/                # PR checks: terraform plan + OPA + Checkov
+└── conftest.toml
+
+## Modules
+
+**compliant-storage** — Azure Storage Account locked to LRS replication. Variable validation rejects GRS/ZRS/GZRS at plan time. Cross-tenant replication disabled. Enforces Art. 37.
+
+**compliant-keyvault** — Azure Key Vault with purge protection enabled, 90-day soft delete, network ACLs denying public access, and tenant-level locking. Secrets never leave the authorized tenant boundary.
+
+**compliant-network** — VNet and subnets with non-overlapping address spaces per region (Mexico: 10.0.0.0/16, US: 10.1.0.0/16). No peering resources by design — cross-region network connectivity is architecturally prohibited, not just policy-blocked.
+
+**observability-baseline** — Log Analytics Workspace with diagnostic settings ensuring audit logs stay in the same region as the resources they monitor. Enforces Art. 36 data residency for compliance evidence.
+
+## OPA Policy Rules
+
+All four rules run on every PR via Conftest against terraform plan output:
+
+| Rule | LFPDPPP Article | What It Catches |
+|---|---|---|
+| Region allowlist | Art. 36 | Storage accounts outside mexicocentral or eastus2 |
+| LRS replication only | Art. 37 | Any replication type other than LRS |
+| Cross-tenant replication disabled | Art. 37 | Cross-tenant replication left enabled |
+| VNet peering prohibited | Art. 37 | Any azurerm_virtual_network_peering resource in the plan |
+
+## CI/CD Pipeline
+
+Every pull request triggers:
+
+1. terraform plan — Generates a plan JSON for the target environment
+2. Conftest OPA check — Runs all Rego policies against the plan output
+3. Checkov static analysis — Scans HCL for security misconfigurations
+
+Branch protection on main requires all checks to pass. No direct pushes.
+
+## Architecture Decision Records
+
+| ADR | Decision | Rationale |
+|---|---|---|
+| ADR-001 | Local state backend | Personal Azure account auth constraints prevent remote backend; bootstrap script provisions state storage for future migration |
+| ADR-002 | Dual enforcement: OPA + Azure Policy | OPA catches violations pre-deploy in CI; Azure Policy detects drift post-deploy at runtime |
+| ADR-003 | Bootstrap script outside Terraform | State backend cannot be managed by the Terraform that depends on it — circular dependency resolved with idempotent shell script |
+
+## Prerequisites
+
+- Terraform >= 1.5
+- Azure CLI (az login with active subscription)
+- Conftest (for OPA policy checks)
+- Checkov (for static analysis)
+
+## Quick Start
+
+```bash
+git clone https://github.com/Esiono/crossborder-iac.git
+cd crossborder-iac
+chmod +x scripts/bootstrap-state-backend.sh
+./scripts/bootstrap-state-backend.sh
+cd environments/mx-central
+terraform init
+terraform plan -out=plan.tfplan
+terraform show -json plan.tfplan > plan.json
+conftest test plan.json -p ../../policies/
+```
+
+## Author
+
+**Eduardo Ayala Siono**
+
+I built this because the problem is in my backyard. I'm based in Mexicali — a border city where US companies have been nearshoring operations for decades, and where the gap between "we comply with Mexican data law" and what the infrastructure actually enforces is something I see play out in practice. Six years of data quality work taught me that compliance gaps don't come from malice — they come from misconfiguration, manual processes, and infrastructure that nobody audited.
+
+When Mexico rewrote the LFPDPPP in 2025 with criminal penalties and $3.86M fines, and Azure launched Mexico Central the year before specifically for data residency, I saw a clear need: someone has to build the infrastructure patterns that enforce these rules by default, not by policy document.
+
+Mexicali, Mexico · US Pacific timezone · Bilingual EN/ES (C2)
+
+linkedin.com/in/eduardosiono
+
+---
+
+Licensed under MIT. This is a reference implementation for portfolio purposes. LFPDPPP compliance requirements should be validated with legal counsel for production deployments.
