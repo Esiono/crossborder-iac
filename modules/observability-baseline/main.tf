@@ -2,9 +2,9 @@
 # observability-baseline/main.tf
 # Creates a Log Analytics Workspace with LFPDPPP residency controls.
 #
-# LFPDPPP Article 36: Audit logs describing access to personal data must
-# remain in the same jurisdiction as the data itself. Diagnostic settings
-# route logs to a region-local workspace only — never cross-region.
+# LFPDPPP (DOF 20 marzo 2025), Art. 35: Audit logs describing access to
+# personal data must remain in the same jurisdiction as the data itself.
+# Diagnostic settings route logs to a region-local workspace only — never cross-region.
 #
 # All resources monitored by this workspace must be in the same region.
 # Cross-region diagnostic routing is prohibited by design.

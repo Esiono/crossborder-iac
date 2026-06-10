@@ -14,7 +14,7 @@ variable "location" {
 
   validation {
     condition     = contains(["mexicocentral", "eastus2"], var.location)
-    error_message = "LFPDPPP compliance: storage must be deployed to mexicocentral or eastus2 only."
+    error_message = "LFPDPPP Art. 35 (DOF 20 marzo 2025): storage must be deployed to mexicocentral or eastus2 only."
   }
 }
 

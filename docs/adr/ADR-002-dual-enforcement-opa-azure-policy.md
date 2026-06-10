@@ -6,8 +6,8 @@
 
 ## Context
 
-LFPDPPP Articles 36-37 require that data residency controls be enforced
-continuously — not just at deployment time. Two enforcement options exist:
+LFPDPPP (DOF 20 marzo 2025) Arts. 35-36 require that data residency controls
+be enforced continuously — not just at deployment time. Two enforcement options exist:
 
 **Option A: OPA in CI only**  
 Run Conftest against `terraform plan` output on every pull request.

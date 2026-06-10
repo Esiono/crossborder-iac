@@ -2,11 +2,12 @@
 # compliant-network/main.tf
 # Creates an Azure VNet with LFPDPPP residency controls.
 #
-# LFPDPPP Article 36: Network infrastructure processing personal data must
-# remain within approved jurisdictions. Region validation in variables.tf.
+# LFPDPPP (DOF 20 marzo 2025), Art. 35: Network infrastructure processing
+# personal data must remain within approved jurisdictions.
+# Region validation enforced in variables.tf.
 #
-# LFPDPPP Article 37: VNet peering between MX and US regions is prohibited —
-# it would create a direct data path across borders without explicit
+# LFPDPPP (DOF 20 marzo 2025), Art. 36: VNet peering between MX and US regions
+# is prohibited — it creates a direct data path across borders without explicit
 # authorization. Peering is not defined in this module by design.
 # No peering resources are created here. OPA enforces this at CI time.
 # =============================================================================

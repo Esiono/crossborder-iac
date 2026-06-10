@@ -3,8 +3,8 @@ variable "name" {
   type        = string
 
   validation {
-    condition     = can(regex("^[a-zA-Z0-9-]{3,24}$", var.name))
-    error_message = "Key Vault name must be 3-24 alphanumeric characters or hyphens."
+    condition     = can(regex("^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$", var.name))
+    error_message = "Key Vault name must be 3-24 chars, start with a letter, end with a letter or digit, and contain only alphanumeric characters or hyphens."
   }
 }
 
@@ -14,17 +14,12 @@ variable "location" {
 
   validation {
     condition     = contains(["mexicocentral", "eastus2"], var.location)
-    error_message = "LFPDPPP compliance: Key Vault must be deployed to mexicocentral or eastus2 only."
+    error_message = "LFPDPPP Art. 35 (DOF 20 marzo 2025): Key Vault must be deployed to mexicocentral or eastus2 only."
   }
 }
 
 variable "resource_group_name" {
   description = "Name of the resource group to deploy the Key Vault into."
-  type        = string
-}
-
-variable "tenant_id" {
-  description = "Azure AD tenant ID. Used to scope Key Vault access policies."
   type        = string
 }
 
