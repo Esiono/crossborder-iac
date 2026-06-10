@@ -68,6 +68,53 @@ jobs:
             --policy ../../policies/ \
             --namespace crossborder.storage
 
+  compliance-us-east2:
+    name: OPA Compliance — us-east2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.3"
+
+      - name: Install Conftest
+        run: |
+          wget https://github.com/open-policy-agent/conftest/releases/download/v0.56.0/conftest_0.56.0_Linux_x86_64.tar.gz
+          tar xzf conftest_0.56.0_Linux_x86_64.tar.gz
+          sudo mv conftest /usr/local/bin/
+          rm conftest_0.56.0_Linux_x86_64.tar.gz
+
+      - name: Terraform Init — us-east2
+        working-directory: environments/us-east2
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        run: terraform init
+
+      - name: Terraform Plan — us-east2
+        working-directory: environments/us-east2
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        run: |
+          terraform plan -out=tfplan.binary
+          terraform show -json tfplan.binary > tfplan.json
+
+      - name: OPA Policy Check — us-east2
+        working-directory: environments/us-east2
+        run: |
+          conftest test tfplan.json \
+            --policy ../../policies/ \
+            --namespace crossborder.storage
+
   checkov-scan:
     name: Checkov Static Analysis
     runs-on: ubuntu-latest

@@ -19,10 +19,22 @@ set -euo pipefail
 # --- Configuration -----------------------------------------------------------
 RESOURCE_GROUP="rg-tfstate-westus2"
 LOCATION="westus2"
-STORAGE_ACCOUNT="stterraformstate$(openssl rand -hex 4)"
 CONTAINER_MX="tfstate-mx-central"
 CONTAINER_US="tfstate-us-east2"
-SUBSCRIPTION_ID="REDACTED_SUBSCRIPTION_ID"
+
+# Storage account name must be globally unique across all of Azure (3-24 chars, lowercase alphanumeric).
+# Set TF_STATE_SA_NAME before running. Re-use the same name on every run for idempotency.
+# Example: export TF_STATE_SA_NAME=stterraformstate08926aad
+if [ -z "${TF_STATE_SA_NAME:-}" ]; then
+  echo "Error: TF_STATE_SA_NAME environment variable is not set."
+  echo "  Choose a globally unique name and export it before running:"
+  echo "  export TF_STATE_SA_NAME=stterraformstateXXXXXXXX"
+  exit 1
+fi
+STORAGE_ACCOUNT="$TF_STATE_SA_NAME"
+
+# Azure subscription — set via ARM_SUBSCRIPTION_ID env var or az login context.
+# Do not hardcode subscription IDs in this file.
 # --- Provider Registration ---------------------------------------------------
 echo "Ensuring required Azure resource providers are registered..."
 az provider register --namespace Microsoft.Storage
@@ -57,7 +69,6 @@ if ! az storage account show --name "$STORAGE_ACCOUNT" \
     --name "$STORAGE_ACCOUNT" \
     --resource-group "$RESOURCE_GROUP" \
     --location "$LOCATION" \
-    --subscription "$SUBSCRIPTION_ID" \
     --sku Standard_LRS \
     --kind StorageV2 \
     --min-tls-version TLS1_2 \

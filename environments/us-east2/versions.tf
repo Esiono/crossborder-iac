@@ -11,5 +11,5 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id = "REDACTED_SUBSCRIPTION_ID"
+  # Set ARM_SUBSCRIPTION_ID environment variable — do not hardcode here.
 }

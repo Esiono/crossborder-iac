@@ -9,9 +9,9 @@ resource "azurerm_resource_group" "main" {
   location = "mexicocentral"
 
   tags = {
-    environment       = "mx-central"
-    lfpdppp_compliant = "true"
-    managed_by        = "terraform"
+    environment         = "mx-central"
+    lfpdppp_compliant   = "true"
+    managed_by          = "terraform"
     data_classification = "personal"
   }
 }
@@ -35,7 +35,6 @@ module "keyvault" {
   name                = "kv-crossborder-mx-001"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
-  tenant_id           = "REDACTED_TENANT_ID"
 
   tags = {
     environment = "mx-central"
