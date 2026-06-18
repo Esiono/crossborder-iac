@@ -17,3 +17,8 @@ output "location" {
   description = "Region where the VNet was deployed."
   value       = azurerm_virtual_network.main.location
 }
+
+output "nsg_ids" {
+  description = "Map of subnet name to NSG resource ID."
+  value       = { for k, v in azurerm_network_security_group.main : k => v.id }
+}
