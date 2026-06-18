@@ -26,8 +26,6 @@ The US–Mexico corridor is booming, but this rapid growth has created a massive
 **The Solution:** This project codifies the 2025 LFPDPPP mandates directly into infrastructure-as-code, ensuring cross-border data violations are caught at the Pull Request stage — not during a legal audit.
 
 #### Sources
-
-
 ¹ [LFPDPPP penalty framework](https://clym.io/regulations/mexican-privacy-law-lfpdppp) — Fines from 100 to 320,000 UMA (~$3.86M USD), doubled for sensitive data. Criminal penalties per [Recording Law](https://www.recordinglaw.com/world-laws/world-data-privacy-laws/mexico-data-privacy-laws/).
 
 ² [Recording Law — LFPDPPP 2025 Guide](https://www.recordinglaw.com/world-laws/world-data-privacy-laws/mexico-data-privacy-laws/) — No formal sanctions published yet under the 2025 law as of May 2026, but early SABG proceedings after the January 2026 cyber incidents indicate the authority will enforce aggressively.
@@ -155,6 +153,7 @@ Branch protection on main requires all checks to pass. No direct pushes.
 | [ADR-001](docs/adr/ADR-001-local-state-backend.md) | Local state backend | Personal Azure account auth constraints prevent remote backend; bootstrap script provisions state storage for future migration |
 | [ADR-002](docs/adr/ADR-002-dual-enforcement-opa-azure-policy.md) | Dual enforcement: OPA + Azure Policy | OPA catches violations pre-deploy in CI; Azure Policy detects drift post-deploy at runtime |
 | [ADR-003](docs/adr/ADR-003-bootstrap-script-outside-terraform.md) | Bootstrap script outside Terraform | State backend cannot be managed by the Terraform that depends on it — circular dependency resolved with idempotent shell script |
+| [ADR-004](docs/adr/ADR-004-lfpdppp-2025-article-migration.md) | LFPDPPP 2025 article migration | Mexico's complete law rewrite (DOF 20 marzo 2025) renumbered the residency and transfer articles; compliance citations across all code and docs were migrated to stay legally accurate |
 
 ## Prerequisites
 
@@ -174,7 +173,7 @@ cd environments/mx-central
 terraform init
 terraform plan -out=plan.tfplan
 terraform show -json plan.tfplan > plan.json
-conftest test plan.json -p ../../policies/
+conftest test plan.json -p ../../policies/ --namespace crossborder.storage
 ```
 
 ## Author
