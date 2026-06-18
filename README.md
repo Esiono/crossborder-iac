@@ -27,10 +27,15 @@ The US–Mexico corridor is booming, but this rapid growth has created a massive
 
 #### Sources
 
+
 ¹ [LFPDPPP penalty framework](https://clym.io/regulations/mexican-privacy-law-lfpdppp) — Fines from 100 to 320,000 UMA (~$3.86M USD), doubled for sensitive data. Criminal penalties per [Recording Law](https://www.recordinglaw.com/world-laws/world-data-privacy-laws/mexico-data-privacy-laws/).
+
 ² [Recording Law — LFPDPPP 2025 Guide](https://www.recordinglaw.com/world-laws/world-data-privacy-laws/mexico-data-privacy-laws/) — No formal sanctions published yet under the 2025 law as of May 2026, but early SABG proceedings after the January 2026 cyber incidents indicate the authority will enforce aggressively.
+
 ³ [USTR — Mexico trade data](https://ustr.gov/countries-regions/americas/mexico) — U.S. goods trade with Mexico totaled $872.8 billion in 2025. Confirmed by [U.S. Census Bureau data](https://www.freightwaves.com/news/us-mexico-trade-hits-new-high-of-872b-in-2025).
+
 ⁴ [IMMEX program data](https://hub.americanindustriesgroup.com/insights/understanding-nearshoring-benefits-manufacturing-companies-mexico/) — Approximately 5,220 companies operate under IMMEX, employing an estimated 2.94 million workers.
+
 ⁵ [Azure Mexico Central](https://news.microsoft.com/es-xl/microsoft-launches-its-first-hyper-scale-cloud-datacenter-region-in-mexico/) — Microsoft's first hyperscale cloud region in Mexico, launched May 2024.
 
 ## How It Works
