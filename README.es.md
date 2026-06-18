@@ -154,6 +154,7 @@ Branch protection en main requiere que todos los checks pasen. No se permiten pu
 | [ADR-001](docs/adr/ADR-001-local-state-backend.md) | State backend local | Restricciones de autenticación en cuenta personal de Azure impiden backend remoto; el script de bootstrap provisiona state storage para migración futura |
 | [ADR-002](docs/adr/ADR-002-dual-enforcement-opa-azure-policy.md) | Enforcement dual: OPA + Azure Policy | OPA detecta violaciones pre-deploy en CI; Azure Policy detecta drift post-deploy en runtime |
 | [ADR-003](docs/adr/ADR-003-bootstrap-script-outside-terraform.md) | Script de bootstrap fuera de Terraform | El state backend no puede ser gestionado por el Terraform que depende de él — dependencia circular resuelta con script shell idempotente |
+| [ADR-004](docs/adr/ADR-004-lfpdppp-2025-article-migration.md) | Migración de artículos LFPDPPP 2025 | La reescritura completa de la ley de México (DOF 20 marzo 2025) renumeró los artículos de residencia y transferencia; las citas de cumplimiento en todo el código y documentación se migraron para mantener precisión legal |
 
 ## Prerequisitos
 
@@ -173,7 +174,7 @@ cd environments/mx-central
 terraform init
 terraform plan -out=plan.tfplan
 terraform show -json plan.tfplan > plan.json
-conftest test plan.json -p ../../policies/
+conftest test plan.json -p ../../policies/ --namespace crossborder.storage
 ```
 
 ## Autor
