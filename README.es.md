@@ -28,9 +28,13 @@ El corredor EE.UU.–México está en auge, pero este crecimiento acelerado ha c
 #### Fuentes
 
 ¹ [Marco de sanciones LFPDPPP](https://clym.io/regulations/mexican-privacy-law-lfpdppp) — Multas de 100 a 320,000 UMA (~$3.86M USD), duplicadas para datos sensibles. Sanciones penales según [Recording Law](https://www.recordinglaw.com/world-laws/world-data-privacy-laws/mexico-data-privacy-laws/).
+
 ² [Recording Law — Guía LFPDPPP 2025](https://www.recordinglaw.com/world-laws/world-data-privacy-laws/mexico-data-privacy-laws/) — Sin sanciones formales publicadas bajo la ley 2025 hasta mayo 2026, pero los primeros procedimientos del SABG tras los ciberincidentes de enero 2026 indican que la autoridad aplicará la ley agresivamente.
+
 ³ [USTR — Datos comerciales con México](https://ustr.gov/countries-regions/americas/mexico) — El comercio de bienes de EE.UU. con México totalizó $872.8 mil millones en 2025. Confirmado por [datos del U.S. Census Bureau](https://www.freightwaves.com/news/us-mexico-trade-hits-new-high-of-872b-in-2025).
+
 ⁴ [Datos del programa IMMEX](https://hub.americanindustriesgroup.com/insights/understanding-nearshoring-benefits-manufacturing-companies-mexico/) — Aproximadamente 5,220 empresas operan bajo IMMEX, empleando un estimado de 2.94 millones de trabajadores.
+
 ⁵ [Azure Mexico Central](https://news.microsoft.com/es-xl/microsoft-anuncia-el-inicio-de-operaciones-de-la-primera-region-de-centros-de-datos-de-nube-a-hiper-escala-en-mexico/) — Primera región de nube hiperescala de Microsoft en México, lanzada en mayo 2024.
 
 ## Cómo Funciona
