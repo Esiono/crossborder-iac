@@ -78,13 +78,21 @@ variable "location" {
 And the OPA policy that catches geo-replication in CI before any PR can merge:
 
 ```rego
+# Real Terraform plans nest resources under root_module.child_modules[_]
+# when calling modules — walk() collects them regardless of nesting depth.
+all_resources contains resource if {
+    walk(input.planned_values.root_module, [path, value])
+    path[count(path) - 1] == "resources"
+    resource := value[_]
+}
+
 deny contains msg if {
-    resource := input.planned_values.root_module.resources[_]
+    resource := all_resources[_]
     resource.type == "azurerm_storage_account"
     replication := resource.values.account_replication_type
     not allowed_replication_types[replication]
     msg := sprintf(
-        "LFPDPPP Art. 36 violation: Storage account '%s' uses replication type '%s'. Only LRS is permitted.",
+        "LFPDPPP Art. 36 violation: Storage account '%s' uses replication type '%s'. Only LRS is permitted — geo-replication transfers data across borders without explicit authorization.",
         [resource.name, replication]
     )
 }
