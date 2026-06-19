@@ -1,0 +1,35 @@
+{
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "azurerm_resource_group.main",
+          "type": "azurerm_resource_group",
+          "name": "main",
+          "values": {
+            "name": "rg-crossborder-mx-central",
+            "location": "mexicocentral"
+          }
+        }
+      ],
+      "child_modules": [
+        {
+          "address": "module.storage",
+          "resources": [
+            {
+              "address": "module.storage.azurerm_storage_account.main",
+              "type": "azurerm_storage_account",
+              "name": "main",
+              "values": {
+                "name": "stbadmoduleexample",
+                "location": "westeurope",
+                "account_replication_type": "GRS",
+                "cross_tenant_replication_enabled": true
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
