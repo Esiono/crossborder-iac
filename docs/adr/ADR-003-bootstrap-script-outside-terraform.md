@@ -35,6 +35,10 @@ uses the remote backend for all subsequent operations.
 Implement Option C — a dedicated bootstrap script at
 `scripts/bootstrap-state-backend.sh`.
 
+Note: The remote backend is not yet active. See ADR-001 for current
+local-state workaround until a service principal replaces the personal
+account.
+
 The script is:
 - **Idempotent**: safe to run multiple times without creating
   duplicate resources

@@ -40,7 +40,7 @@ The US–Mexico corridor is booming, but this rapid growth has created a massive
 
 Three enforcement layers catch violations at different stages, so nothing reaches production unchecked:
 
-```
+```text
 ┌──────────────────────────┐    ┌──────────────────────────┐    ┌──────────────────────────┐
 │  Layer 1 — IaC           │ →  │  Layer 2 — CI            │ →  │  Layer 3 — Runtime       │
 │  Terraform modules       │    │  GitHub Actions PR gate  │    │  Azure Policy            │
@@ -92,7 +92,7 @@ deny contains msg if {
 
 ## Architecture
 
-```
+```text
 crossborder-iac/
 ├── modules/
 │   ├── compliant-storage/        # Storage account — LRS only, Art. 36
@@ -175,6 +175,36 @@ terraform plan -out=plan.tfplan
 terraform show -json plan.tfplan > plan.json
 conftest test plan.json -p ../../policies/ --namespace crossborder.storage
 ```
+
+## Sample Enforcement Output
+
+This is real output from running Conftest against the noncompliant fixtures in `tests/fixtures/` — a storage account in the wrong region with GRS replication and cross-tenant replication enabled, the same misconfiguration nested inside a child module, and a prohibited VNet peering resource:
+
+```text
+$ conftest test tests/fixtures/ --policy policies/ --namespace crossborder.storage
+
+FAIL - tests/fixtures/noncompliant_storage.json - crossborder.storage - LFPDPPP Art. 35 violation: Storage account 'bad' is in region 'westeurope'. Allowed regions: {"eastus2", "mexicocentral"}
+FAIL - tests/fixtures/noncompliant_storage.json - crossborder.storage - LFPDPPP Art. 36 violation: Storage account 'bad' has cross-tenant replication enabled. This permits data transfer to foreign tenants without explicit authorization.
+FAIL - tests/fixtures/noncompliant_storage.json - crossborder.storage - LFPDPPP Art. 36 violation: Storage account 'bad' uses replication type 'GRS'. Only LRS is permitted — geo-replication transfers data across borders without explicit authorization.
+FAIL - tests/fixtures/noncompliant_storage_module.json - crossborder.storage - LFPDPPP Art. 35 violation: Storage account 'main' is in region 'westeurope'. Allowed regions: {"eastus2", "mexicocentral"}
+FAIL - tests/fixtures/noncompliant_storage_module.json - crossborder.storage - LFPDPPP Art. 36 violation: Storage account 'main' has cross-tenant replication enabled. This permits data transfer to foreign tenants without explicit authorization.
+FAIL - tests/fixtures/noncompliant_storage_module.json - crossborder.storage - LFPDPPP Art. 36 violation: Storage account 'main' uses replication type 'GRS'. Only LRS is permitted — geo-replication transfers data across borders without explicit authorization.
+FAIL - tests/fixtures/noncompliant_peering.json - crossborder.storage - LFPDPPP Art. 36 violation: VNet peering resource 'mx_to_us' detected. Cross-region VNet peering creates unauthorized data paths across borders. Peering between mexicocentral and eastus2 is prohibited.
+
+12 tests, 5 passed, 0 warnings, 7 failures, 0 exceptions
+```
+
+A non-zero exit code blocks the pull request — this is the check that runs in `compliance-mx-central` and `compliance-us-east2` on every PR.
+
+## What's Next
+
+This is a reference implementation, not a finished platform. Planned work:
+
+- **Azure Policy as enforcement Layer 3** — runtime drift detection per [ADR-002](docs/adr/ADR-002-dual-enforcement-opa-azure-policy.md), currently the one layer of defense-in-depth that exists on paper but not in Terraform.
+- **Remote state migration to Azure Blob** — replace the local backend once a service principal is in place, per [ADR-001](docs/adr/ADR-001-local-state-backend.md) and [ADR-003](docs/adr/ADR-003-bootstrap-script-outside-terraform.md).
+- **Private endpoints for Storage and Key Vault** — both resources already block public network access; private endpoints would close the resulting connectivity gap for legitimate access.
+- **Expanded OPA policies for additional resource types** — the current four rules cover storage and networking; Key Vault and Log Analytics configuration drift aren't yet policy-checked.
+- **CI enhancements** — `terraform fmt -check`, `terraform validate`, and `tflint` as fast pre-checks ahead of the plan/OPA/Checkov pipeline.
 
 ## Author
 
