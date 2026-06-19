@@ -19,6 +19,8 @@ resource "azurerm_key_vault" "main" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
   sku_name            = "standard"
 
+  public_network_access_enabled = false
+
   # LFPDPPP Art. 36 — prevent permanent destruction of encryption keys
   purge_protection_enabled   = true
   soft_delete_retention_days = var.soft_delete_retention_days

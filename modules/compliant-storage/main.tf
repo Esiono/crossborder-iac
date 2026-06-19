@@ -24,6 +24,8 @@ resource "azurerm_storage_account" "main" {
   # HTTPS-only traffic is enforced by default in azurerm v4 — no explicit flag needed
   min_tls_version                 = "TLS1_2"
   allow_nested_items_to_be_public = false
+  public_network_access_enabled   = false
+  shared_access_key_enabled       = false
 
   blob_properties {
     versioning_enabled = true
