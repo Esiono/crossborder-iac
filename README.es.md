@@ -41,7 +41,7 @@ El corredor EE.UU.–México está en auge, pero este crecimiento acelerado ha c
 
 Tres capas de enforcement detectan violaciones en diferentes etapas, asegurando que nada llegue a producción sin verificar:
 
-```
+```text
 ┌──────────────────────────┐    ┌──────────────────────────┐    ┌──────────────────────────┐
 │  Capa 1 — IaC            │ →  │  Capa 2 — CI             │ →  │  Capa 3 — Runtime        │
 │  Módulos Terraform       │    │  Gate de PR en Actions   │    │  Azure Policy            │
@@ -93,7 +93,7 @@ deny contains msg if {
 
 ## Arquitectura
 
-```
+```text
 crossborder-iac/
 ├── modules/
 │   ├── compliant-storage/        # Cuenta de almacenamiento — solo LRS, Art. 36
@@ -176,6 +176,36 @@ terraform plan -out=plan.tfplan
 terraform show -json plan.tfplan > plan.json
 conftest test plan.json -p ../../policies/ --namespace crossborder.storage
 ```
+
+## Ejemplo de Aplicación de Políticas
+
+Esta es la salida real de ejecutar Conftest contra los fixtures no conformes en `tests/fixtures/`: una cuenta de almacenamiento en la región incorrecta con replicación GRS y cross-tenant habilitada, la misma mala configuración pero anidada dentro de un módulo hijo, y un recurso de VNet peering prohibido:
+
+```text
+$ conftest test tests/fixtures/ --policy policies/ --namespace crossborder.storage
+
+FAIL - tests/fixtures/noncompliant_storage.json - crossborder.storage - LFPDPPP Art. 35 violation: Storage account 'bad' is in region 'westeurope'. Allowed regions: {"eastus2", "mexicocentral"}
+FAIL - tests/fixtures/noncompliant_storage.json - crossborder.storage - LFPDPPP Art. 36 violation: Storage account 'bad' has cross-tenant replication enabled. This permits data transfer to foreign tenants without explicit authorization.
+FAIL - tests/fixtures/noncompliant_storage.json - crossborder.storage - LFPDPPP Art. 36 violation: Storage account 'bad' uses replication type 'GRS'. Only LRS is permitted — geo-replication transfers data across borders without explicit authorization.
+FAIL - tests/fixtures/noncompliant_storage_module.json - crossborder.storage - LFPDPPP Art. 35 violation: Storage account 'main' is in region 'westeurope'. Allowed regions: {"eastus2", "mexicocentral"}
+FAIL - tests/fixtures/noncompliant_storage_module.json - crossborder.storage - LFPDPPP Art. 36 violation: Storage account 'main' has cross-tenant replication enabled. This permits data transfer to foreign tenants without explicit authorization.
+FAIL - tests/fixtures/noncompliant_storage_module.json - crossborder.storage - LFPDPPP Art. 36 violation: Storage account 'main' uses replication type 'GRS'. Only LRS is permitted — geo-replication transfers data across borders without explicit authorization.
+FAIL - tests/fixtures/noncompliant_peering.json - crossborder.storage - LFPDPPP Art. 36 violation: VNet peering resource 'mx_to_us' detected. Cross-region VNet peering creates unauthorized data paths across borders. Peering between mexicocentral and eastus2 is prohibited.
+
+12 tests, 5 passed, 0 warnings, 7 failures, 0 exceptions
+```
+
+Un exit code distinto de cero bloquea el pull request — este es el check que corre en `compliance-mx-central` y `compliance-us-east2` en cada PR.
+
+## Qué Sigue
+
+Esto es una implementación de referencia, no una plataforma terminada. Lo que falta:
+
+- **Azure Policy como Capa 3 de enforcement** — detección de drift en runtime según [ADR-002](docs/adr/ADR-002-dual-enforcement-opa-azure-policy.md). Hoy es la única capa de defensa en profundidad que existe en el papel pero todavía no en Terraform.
+- **Migración del state remoto a Azure Blob** — sustituir el backend local en cuanto haya un service principal disponible, según [ADR-001](docs/adr/ADR-001-local-state-backend.md) y [ADR-003](docs/adr/ADR-003-bootstrap-script-outside-terraform.md).
+- **Private endpoints para Storage y Key Vault** — ambos recursos ya bloquean el acceso público; falta el private endpoint que permita el acceso legítimo sin reabrir esa puerta.
+- **Más reglas OPA para otros tipos de recursos** — las cuatro reglas actuales cubren storage y networking; Key Vault y Log Analytics todavía no tienen drift de configuración verificado por política.
+- **Mejoras al pipeline de CI** — agregar `terraform fmt -check`, `terraform validate` y `tflint` como checks rápidos antes del plan/OPA/Checkov.
 
 ## Autor
 
