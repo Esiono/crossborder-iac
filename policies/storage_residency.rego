@@ -22,11 +22,28 @@ allowed_regions := {"mexicocentral", "eastus2"}
 allowed_replication_types := {"LRS"}
 
 # =============================================================================
+# HELPER: all_resources
+# Real Terraform plans that call modules (module.storage, module.keyvault,
+# module.network, etc. — as every environment in this repo does) nest
+# resources under root_module.child_modules[_].resources[_], not directly
+# under root_module.resources[_]. walk() traverses the full root_module tree
+# — root-level resources plus every level of child_modules, however deeply
+# nested — and collects every element found under a "resources" key. All
+# four rules below read from this set, so they catch violations regardless
+# of whether a resource lives at the root or inside a module.
+# =============================================================================
+all_resources contains resource if {
+    walk(input.planned_values.root_module, [path, value])
+    path[count(path) - 1] == "resources"
+    resource := value[_]
+}
+
+# =============================================================================
 # RULE 1: Storage accounts must be in approved regions
 # LFPDPPP Art. 35 — adequate protection requires approved jurisdictions
 # =============================================================================
 deny contains msg if {
-    resource := input.planned_values.root_module.resources[_]
+    resource := all_resources[_]
     resource.type == "azurerm_storage_account"
     location := resource.values.location
     not allowed_regions[location]
@@ -42,7 +59,7 @@ deny contains msg if {
 # explicit authorization
 # =============================================================================
 deny contains msg if {
-    resource := input.planned_values.root_module.resources[_]
+    resource := all_resources[_]
     resource.type == "azurerm_storage_account"
     replication := resource.values.account_replication_type
     not allowed_replication_types[replication]
@@ -57,7 +74,7 @@ deny contains msg if {
 # LFPDPPP Art. 36 — data must not flow to foreign tenants
 # =============================================================================
 deny contains msg if {
-    resource := input.planned_values.root_module.resources[_]
+    resource := all_resources[_]
     resource.type == "azurerm_storage_account"
     resource.values.cross_tenant_replication_enabled == true
     msg := sprintf(
@@ -71,7 +88,7 @@ deny contains msg if {
 # without explicit authorization, violating cross-border transfer rules.
 # =============================================================================
 deny contains msg if {
-    resource := input.planned_values.root_module.resources[_]
+    resource := all_resources[_]
     resource.type == "azurerm_virtual_network_peering"
     msg := sprintf(
         "LFPDPPP Art. 36 violation: VNet peering resource '%s' detected. Cross-region VNet peering creates unauthorized data paths across borders. Peering between mexicocentral and eastus2 is prohibited.",
