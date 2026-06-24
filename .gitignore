@@ -49,3 +49,6 @@ tfplan.json
 *.tfplan
 # Backend files contain access keys — never commit
 environments/*/backend.tf
+
+# Claude Code local harness config — not part of the project
+.claude/

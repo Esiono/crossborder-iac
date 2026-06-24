@@ -129,11 +129,10 @@ jobs:
       - name: Run Checkov
         run: |
           ARGS=(-d . --framework terraform --compact)
-          ARGS+=(--skip-check CKV_AZURE_33)
-          ARGS+=(--skip-check CKV_AZURE_110)
-          ARGS+=(--skip-check CKV2_AZURE_1)
-          ARGS+=(--skip-check CKV2_AZURE_18)
-          ARGS+=(--skip-check CKV2_AZURE_21)
+          ARGS+=(--skip-check CKV_AZURE_33)    # Storage Queue service logging — Queue Storage isn't used in this reference implementation
+          ARGS+=(--skip-check CKV2_AZURE_1)    # Storage customer-managed key encryption — uses Microsoft-managed keys; CMK is out of scope for reference implementation
+          ARGS+=(--skip-check CKV2_AZURE_18)   # Storage customer-managed key encryption (duplicate of CKV2_AZURE_1) — same rationale, CMK out of scope
+          ARGS+=(--skip-check CKV2_AZURE_21)   # Storage Blob service read-request logging — not configured; diagnostics handled via observability-baseline module instead
           ARGS+=(--skip-check CKV_AZURE_206)   # Geo-replication prohibited by LFPDPPP Art. 36 — LRS-only is a legal requirement
           ARGS+=(--skip-check CKV2_AZURE_32)   # Private endpoint for Key Vault — out of scope for reference implementation
           ARGS+=(--skip-check CKV2_AZURE_33)   # Private endpoint for Storage — out of scope for reference implementation
