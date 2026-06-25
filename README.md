@@ -214,6 +214,10 @@ This is a reference implementation, not a finished platform. Planned work:
 - **Expanded OPA policies for additional resource types** — the current four rules cover storage and networking; Key Vault and Log Analytics configuration drift aren't yet policy-checked.
 - **CI enhancements** — `terraform fmt -check`, `terraform validate`, and `tflint` as fast pre-checks ahead of the plan/OPA/Checkov pipeline.
 
+### Pre-commit Hooks
+
+Install once with `pip install pre-commit && pre-commit install`. Hooks then run automatically on every commit — `terraform fmt`, `terraform validate`, `tflint`, and `conftest` against the test fixtures.
+
 ## Author
 
 **Eduardo Ayala Siono** · Data Analyst / Data Engineer

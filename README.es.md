@@ -215,6 +215,10 @@ Esto es una implementación de referencia, no una plataforma terminada. Lo que f
 - **Más reglas OPA para otros tipos de recursos** — las cuatro reglas actuales cubren storage y networking; Key Vault y Log Analytics todavía no tienen drift de configuración verificado por política.
 - **Mejoras al pipeline de CI** — agregar `terraform fmt -check`, `terraform validate` y `tflint` como checks rápidos antes del plan/OPA/Checkov.
 
+### Hooks de Pre-commit
+
+Instálalos una vez con `pip install pre-commit && pre-commit install`. A partir de ahí corren solos en cada commit — `terraform fmt`, `terraform validate`, `tflint` y `conftest` contra los fixtures de prueba.
+
 ## Autor
 
 **Eduardo Ayala Siono** · Analista de Datos / Ingeniero de Datos

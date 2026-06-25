@@ -10,6 +10,17 @@
 # authorization. Geo-replication is disabled to prevent unauthorized transfers.
 # =============================================================================
 
+terraform {
+  required_version = ">= 1.5"
+
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.0"
+    }
+  }
+}
+
 resource "azurerm_storage_account" "main" {
   name                     = var.name
   resource_group_name      = var.resource_group_name

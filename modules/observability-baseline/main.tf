@@ -10,6 +10,17 @@
 # Cross-region diagnostic routing is prohibited by design.
 # =============================================================================
 
+terraform {
+  required_version = ">= 1.5"
+
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.0"
+    }
+  }
+}
+
 resource "azurerm_log_analytics_workspace" "main" {
   name                = var.workspace_name
   location            = var.location

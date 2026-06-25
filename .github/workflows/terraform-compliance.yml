@@ -3,10 +3,14 @@
 # Runs Terraform plan + OPA policy checks on every pull request.
 #
 # Enforcement model:
+#   - lint: terraform fmt/validate + tflint, fails fast before any plan
 #   - OPA via Conftest: catches violations in PR before merge
 #   - Azure Policy: catches drift at runtime (separate layer)
 #
 # This workflow implements the CI half of the defense-in-depth strategy.
+#
+# Actions are pinned to commit SHAs (not tags) for supply-chain integrity —
+# the trailing comment records which release tag the SHA corresponds to.
 # =============================================================================
 
 name: Terraform Compliance
@@ -21,16 +25,54 @@ on:
       - 'policies/**'
 
 jobs:
-  compliance-mx-central:
-    name: OPA Compliance — mx-central
+  lint:
+    name: Lint — fmt, validate, tflint
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: "1.9.8"
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Validate
+        run: |
+          for env in environments/mx-central environments/us-east2; do
+            echo "Validating $env"
+            terraform -chdir="$env" init -backend=false -input=false
+            terraform -chdir="$env" validate
+          done
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@6e87008f9dd1fe3e34e66aca6c97b4a69f72a7f4 # v4
+        with:
+          tflint_version: v0.63.1
+
+      - name: Init TFLint
+        run: tflint --init
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run TFLint
+        run: tflint --recursive
+
+  compliance-mx-central:
+    name: OPA Compliance — mx-central
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
         with:
           terraform_version: "1.9.8"
 
@@ -71,13 +113,14 @@ jobs:
   compliance-us-east2:
     name: OPA Compliance — us-east2
     runs-on: ubuntu-latest
+    needs: lint
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
         with:
           terraform_version: "1.9.8"
 
@@ -121,10 +164,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Install Checkov
-        run: pip install checkov
+        run: pip install checkov==3.3.2 # Pinned for reproducibility; update periodically
 
       - name: Run Checkov
         run: |

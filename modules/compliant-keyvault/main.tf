@@ -10,6 +10,17 @@
 # and tenant-locking prevent keys from leaving the approved jurisdiction.
 # =============================================================================
 
+terraform {
+  required_version = ">= 1.5"
+
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.0"
+    }
+  }
+}
+
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "main" {
