@@ -148,11 +148,20 @@ All four rules run on every PR via Conftest against terraform plan output:
 
 Every pull request triggers:
 
-1. terraform plan — Generates a plan JSON for the target environment
-2. Conftest OPA check — Runs all Rego policies against the plan output
-3. Checkov static analysis — Scans HCL for security misconfigurations
+1. Lint — `terraform fmt -check`, `terraform validate`, and `tflint`; must pass before the jobs below run
+2. terraform plan — Generates a plan JSON for the target environment
+3. Conftest OPA check — Runs all Rego policies against the plan output
+4. Checkov static analysis — Scans HCL for security misconfigurations
 
 Branch protection on main requires all checks to pass. No direct pushes.
+
+### CI Security
+
+CI secrets are scoped to trusted branches only. Pull requests from forks require maintainer approval before workflows execute. All GitHub Actions are pinned to commit SHAs and Checkov is version-locked for supply-chain integrity.
+
+### Pre-commit Hooks
+
+Install once with `pip install pre-commit && pre-commit install`. Hooks then run automatically on every commit — `terraform fmt`, `terraform validate`, `tflint`, and `conftest` against the test fixtures.
 
 ## Architecture Decision Records
 
@@ -202,6 +211,8 @@ FAIL - tests/fixtures/noncompliant_peering.json - crossborder.storage - LFPDPPP 
 12 tests, 5 passed, 0 warnings, 7 failures, 0 exceptions
 ```
 
+*Output captured from v1.0.0 test fixtures. Run `conftest test tests/fixtures/ --policy policies/ --namespace crossborder.storage` to verify against current rules.*
+
 A non-zero exit code blocks the pull request — this is the check that runs in `compliance-mx-central` and `compliance-us-east2` on every PR.
 
 ## What's Next
@@ -212,11 +223,6 @@ This is a reference implementation, not a finished platform. Planned work:
 - **Remote state migration to Azure Blob** — replace the local backend once a service principal is in place, per [ADR-001](docs/adr/ADR-001-local-state-backend.md) and [ADR-003](docs/adr/ADR-003-bootstrap-script-outside-terraform.md).
 - **Private endpoints for Storage and Key Vault** — both resources already block public network access; private endpoints would close the resulting connectivity gap for legitimate access.
 - **Expanded OPA policies for additional resource types** — the current four rules cover storage and networking; Key Vault and Log Analytics configuration drift aren't yet policy-checked.
-- **CI enhancements** — `terraform fmt -check`, `terraform validate`, and `tflint` as fast pre-checks ahead of the plan/OPA/Checkov pipeline.
-
-### Pre-commit Hooks
-
-Install once with `pip install pre-commit && pre-commit install`. Hooks then run automatically on every commit — `terraform fmt`, `terraform validate`, `tflint`, and `conftest` against the test fixtures.
 
 ## Author
 

@@ -149,11 +149,20 @@ Las cuatro reglas se ejecutan en cada PR vía Conftest contra la salida de terra
 
 Cada pull request ejecuta:
 
-1. terraform plan — Genera un plan JSON para el entorno objetivo
-2. Conftest OPA check — Ejecuta todas las políticas Rego contra la salida del plan
-3. Checkov análisis estático — Escanea el HCL buscando configuraciones de seguridad incorrectas
+1. Lint — `terraform fmt -check`, `terraform validate` y `tflint`; debe pasar antes de que corran los jobs siguientes
+2. terraform plan — Genera un plan JSON para el entorno objetivo
+3. Conftest OPA check — Ejecuta todas las políticas Rego contra la salida del plan
+4. Checkov análisis estático — Escanea el HCL buscando configuraciones de seguridad incorrectas
 
 Branch protection en main requiere que todos los checks pasen. No se permiten pushes directos.
+
+### Seguridad del CI
+
+Los secrets de CI solo están disponibles en ramas de confianza — los pull requests desde forks requieren aprobación de un mantenedor antes de que corran los workflows. Todas las GitHub Actions están fijadas a SHAs de commit específicos, y Checkov tiene la versión bloqueada, para mantener la integridad de la cadena de suministro.
+
+### Hooks de Pre-commit
+
+Instálalos una vez con `pip install pre-commit && pre-commit install`. A partir de ahí corren solos en cada commit — `terraform fmt`, `terraform validate`, `tflint` y `conftest` contra los fixtures de prueba.
 
 ## Registros de Decisiones de Arquitectura
 
@@ -203,6 +212,8 @@ FAIL - tests/fixtures/noncompliant_peering.json - crossborder.storage - LFPDPPP 
 12 tests, 5 passed, 0 warnings, 7 failures, 0 exceptions
 ```
 
+*Salida capturada de los fixtures de prueba v1.0.0. Ejecuta `conftest test tests/fixtures/ --policy policies/ --namespace crossborder.storage` para verificar contra las reglas actuales.*
+
 Un exit code distinto de cero bloquea el pull request — este es el check que corre en `compliance-mx-central` y `compliance-us-east2` en cada PR.
 
 ## Qué Sigue
@@ -213,11 +224,6 @@ Esto es una implementación de referencia, no una plataforma terminada. Lo que f
 - **Migración del state remoto a Azure Blob** — sustituir el backend local en cuanto haya un service principal disponible, según [ADR-001](docs/adr/ADR-001-local-state-backend.md) y [ADR-003](docs/adr/ADR-003-bootstrap-script-outside-terraform.md).
 - **Private endpoints para Storage y Key Vault** — ambos recursos ya bloquean el acceso público; falta el private endpoint que permita el acceso legítimo sin reabrir esa puerta.
 - **Más reglas OPA para otros tipos de recursos** — las cuatro reglas actuales cubren storage y networking; Key Vault y Log Analytics todavía no tienen drift de configuración verificado por política.
-- **Mejoras al pipeline de CI** — agregar `terraform fmt -check`, `terraform validate` y `tflint` como checks rápidos antes del plan/OPA/Checkov.
-
-### Hooks de Pre-commit
-
-Instálalos una vez con `pip install pre-commit && pre-commit install`. A partir de ahí corren solos en cada commit — `terraform fmt`, `terraform validate`, `tflint` y `conftest` contra los fixtures de prueba.
 
 ## Autor
 
