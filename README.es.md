@@ -66,12 +66,12 @@ Las citaciones a la LFPDPPP no están solo en la documentación — se ejecutan 
 
 ```hcl
 variable "location" {
-  description = "Región de Azure donde se creará la cuenta de almacenamiento."
+  description = "Azure region where the storage account will be created."
   type        = string
 
   validation {
     condition     = contains(["mexicocentral", "eastus2"], var.location)
-    error_message = "LFPDPPP Art. 35 (DOF 20 marzo 2025): El almacenamiento debe desplegarse solo en mexicocentral o eastus2."
+    error_message = "LFPDPPP Art. 35 (DOF 20 marzo 2025): storage must be deployed to mexicocentral or eastus2 only."
   }
 }
 ```

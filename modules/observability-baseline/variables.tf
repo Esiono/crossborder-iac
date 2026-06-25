@@ -4,7 +4,7 @@ variable "location" {
 
   validation {
     condition     = contains(["mexicocentral", "eastus2"], var.location)
-    error_message = "LFPDPPP compliance: Log Analytics Workspace must be in mexicocentral or eastus2 only."
+    error_message = "LFPDPPP Art. 35 (DOF 20 marzo 2025): Log Analytics Workspace must be in mexicocentral or eastus2 only."
   }
 }
 
