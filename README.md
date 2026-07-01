@@ -179,7 +179,11 @@ Install once with `pip install pre-commit && pre-commit install`. Hooks then run
 - Conftest (for OPA policy checks)
 - Checkov (for static analysis)
 
+*Pre-commit hooks require a Unix-like shell (Linux, macOS, or WSL on Windows). They will not run in native Windows PowerShell.*
+
 ## Quick Start
+
+Install Conftest: see [conftest.dev](https://www.conftest.dev/) for installation instructions.
 
 ```bash
 git clone https://github.com/Esiono/crossborder-iac.git
