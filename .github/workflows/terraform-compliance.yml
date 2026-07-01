@@ -161,6 +161,7 @@ jobs:
   checkov-scan:
     name: Checkov Static Analysis
     runs-on: ubuntu-latest
+    needs: lint
 
     steps:
       - name: Checkout code
